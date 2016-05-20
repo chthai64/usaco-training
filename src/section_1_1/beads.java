@@ -26,57 +26,51 @@ public class beads {
 	}
 	
 	public static int maxBeads(String beads) {
+		char[] ss = (beads + beads).toCharArray();
+		
+		int[] leftRed = new int[ss.length + 1];
+		int[] leftBlue = new int[ss.length + 1];
+		int[] rightRed = new int[ss.length + 1];
+		int[] rightBlue = new int[ss.length + 1];
+		
+		for (int i = 1; i < ss.length; i++) {
+			if (ss[i] == 'w') {
+				leftRed[i] = leftRed[i - 1] + 1;
+				leftBlue[i] = leftBlue[i - 1] + 1;
+			}
+			else if (ss[i] == 'r') {
+				leftRed[i] = leftRed[i - 1] + 1;
+				leftBlue[i] = 0;
+			}
+			else {
+				leftRed[i] = 0;
+				leftBlue[i] =  leftBlue[i - 1] + 1;
+			}
+		}
+		
+		for (int i = ss.length - 1; i >= 0; i--) {
+			if (ss[i] == 'w') {
+				rightRed[i] = rightRed[i + 1] + 1;
+				rightBlue[i] = rightBlue[i + 1] + 1;
+			}
+			else if (ss[i] == 'r') {
+				rightRed[i] = rightRed[i + 1] + 1;
+				rightBlue[i] = 0;
+			}
+			else {
+				rightRed[i] = 0;
+				rightBlue[i] = rightBlue[i + 1] + 1;
+			}
+		}
+		
 		int max = 0;
-		
-		for (int i = 0; i < beads.length() - 1; i++) {
-			max = Math.max(max, compute(beads, i, i + 1));
+		for (int p = 1; p < ss.length; p++) {
+			int localMax = Math.max(leftRed[p - 1], leftBlue[p - 1])
+					+ Math.max(rightRed[p], rightBlue[p]);
+			max = Math.max(max, localMax);
 		}
 		
-		max = Math.max(max, compute(beads, beads.length() - 1, 0));
-		return max;
-	}
-	
-	static int compute(String beads, int left, int right) {
-		int count = 0;
-		boolean[] visited = new boolean[beads.length()];
-		
-		char lastLeft = beads.charAt(left);
-		boolean doneLeft = false;
-		
-		while (!visited[left] && !doneLeft) {
-			char c = beads.charAt(left);
-			if (c == lastLeft || lastLeft == 'w' || c == 'w') {
-				if (lastLeft == 'w')
-					lastLeft = c;
-				
-				visited[left] = true;
-				count++;
-			} else {
-				doneLeft = true;
-			}
-			
-			left = (--left < 0)? beads.length() - 1 : left;
-		}
-		
-		char lastRight = beads.charAt(right);
-		boolean doneRight = false;
-		
-		while (!visited[right] && !doneRight) {
-			char c = beads.charAt(right);
-			if (c == lastRight || lastRight == 'w' || c == 'w') {
-				if (lastRight == 'w')
-					lastRight = c;
-				
-				visited[right] = true;
-				count++;
-			} else {
-				doneRight = true;
-			}
-			
-			right = (right + 1) % beads.length();
-		}
-		
-		return count;
+		return Math.min(max, beads.length());
 	}
 	
 	private static Input fromFile(String path) throws IOException {
