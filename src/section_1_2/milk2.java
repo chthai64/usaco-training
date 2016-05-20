@@ -4,7 +4,7 @@ LANG: JAVA
 TASK: milk2
  */
 
-//package section_1_2;
+package section_1_2;
 
 import java.io.*;
 import java.util.*;
@@ -32,8 +32,8 @@ public class milk2 {
 		Arrays.sort(a, new Comparator<Interval>() {
 			@Override
 			public int compare(Interval a, Interval b) {
-				Integer n = a.end;
-				Integer m = b.end;
+				Integer n = a.start;
+				Integer m = b.start;
 				return n.compareTo(m);
 			}
 		});
@@ -44,17 +44,17 @@ public class milk2 {
 		int earliestStart = a[0].start;
 		int latestEnd = a[0].end;
 		
-		for (Interval interval : a) {
-			if (interval.start <= latestEnd) {
-				earliestStart = Math.min(earliestStart, interval.start);
-				latestEnd = interval.end;
+		for (Interval v : a) {
+			if (v.start > latestEnd) {
+				longestIdle = Math.max(longestIdle, v.start - latestEnd);
+				earliestStart = v.start;
+				latestEnd = v.end;
 			} else {
-				longestIdle = Math.max(interval.start - latestEnd, longestIdle);
-				earliestStart = interval.start;
-				latestEnd = interval.end;
+				earliestStart = Math.min(earliestStart, v.start);
+				latestEnd = Math.max(latestEnd, v.end);
 			}
 			
-			longestMilking = Math.max(longestMilking, latestEnd - earliestStart);
+			longestMilking = Math.max(latestEnd - earliestStart, longestMilking);
 		}
 		
 		return longestMilking + " " + longestIdle;
