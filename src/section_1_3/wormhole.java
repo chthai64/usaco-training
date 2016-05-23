@@ -33,70 +33,47 @@ public class wormhole {
 	
 	public static int solve(List<Point> points) {
 		Map<Point, Point> mapNext = createMapNext(points);
-		
-		List<Pair> allPairs = new ArrayList<Pair>();
-		for (int i = 0; i < points.size() - 1; i++) {
-			for (int j = i + 1; j < points.size(); j++) {
-				Pair pair = new Pair(points.get(i), points.get(j));
-				allPairs.add(pair);
-			}
-		}
-
-		return generate(mapNext, allPairs, new ArrayList<Pair>(),
-				new HashSet<Point>(), points, 0);
+		Map<Point, Point> partner = new HashMap<Point, Point>();
+		return recurse(mapNext, partner, points);
 	}
 	
-	static int generate(Map<Point, Point> mapNext, List<Pair> allPairs,
-			List<Pair> pairs, Set<Point> pointSet, List<Point> points, int index) {
+	static int recurse(Map<Point, Point> mapNext, Map<Point, Point> partner, List<Point> points) {
+		int i = 0;
+		while (i < points.size() && partner.containsKey(points.get(i))) {
+			i++;
+		}
 		
-		if (index == allPairs.size() || pointSet.size() == points.size()) {
-			if (pointSet.size() == points.size()) {
-				if (compute(mapNext, pairs, points))
-					return 1;
-			}
-			return 0;
+		if (i == points.size()) {
+			return isCycleExist(mapNext, partner, points)? 1 : 0;
 		}
 		
 		int count = 0;
-		for (int i = index; i < allPairs.size(); i++) {
-			Pair pair = allPairs.get(i);
-			
-			if (!pointSet.contains(pair.a) && !pointSet.contains(pair.b)) {
-				pairs.add(pair);
-				pointSet.add(pair.a);
-				pointSet.add(pair.b);
+		for (int j = i + 1; j < points.size(); j++) {
+			if (!partner.containsKey(points.get(j))) {
+				partner.put(points.get(i), points.get(j));
+				partner.put(points.get(j), points.get(i));
 				
-				count += generate(mapNext, allPairs, pairs, pointSet, points, i + 1);
+				count += recurse(mapNext, partner, points);
 				
-				pairs.remove(pairs.size() - 1);
-				pointSet.remove(pair.a);
-				pointSet.remove(pair.b);
+				partner.remove(points.get(i));
+				partner.remove(points.get(j));
 			}
 		}
 		
 		return count;
 	}
 	
-	static boolean compute(Map<Point, Point> mapNext, List<Pair> pairs, List<Point> points) {
-		Map<Point, Point> graph = new HashMap<Point, Point>();
-		
-		for (Pair pair : pairs) {
-			graph.put(pair.a, pair.b);
-			graph.put(pair.b, pair.a);
-		}
-		
-		for (Point start : points) {
-			Point curr = start;
-			Point prev = mapNext.get(curr);
-			Point next = graph.get(prev);
+	static boolean isCycleExist(Map<Point, Point> mapNext, Map<Point, Point> partner, List<Point> points) {
+		for (int i = 0; i < points.size(); i++) {
+			Point curr = points.get(i);
+			int n = 0;
 			
-			while (next != null && next != start) {
-				curr = next;
-				prev = mapNext.get(curr);
-				next = graph.get(prev);
+			while (curr != null && n < points.size()) {
+				curr = partner.get(mapNext.get(curr));
+				n++;
 			}
 			
-			if (next != null) {
+			if (n >= points.size()) {
 				return true;
 			}
 		}
@@ -138,37 +115,6 @@ public class wormhole {
 		Point pLeft = points.get(left);
 		points.set(left, points.get(right));
 		points.set(right, pLeft);
-	}
-	
-	static class Pair {
-		Point a, b;
-		
-		public Pair(Point a, Point b) {
-			this.a = a;
-			this.b = b;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof Pair) {
-				Pair pair = (Pair) obj;
-				return (a == pair.a && b == pair.b) || 
-						(a == pair.b && b == pair.a);
-			}
-			return false;
-		}
-		
-		@Override	
-		public int hashCode() {
-			int[] array = {a.x, a.y, b.x, b.y};
-			Arrays.sort(array);
-			return Arrays.hashCode(array);
-		}
-		
-		@Override
-		public String toString() {
-			return "(" + a.x + ", " + a.y + ") -> (" + b.x + ", " + b.y + ")";
-		}
 	}
 	
 	static class Point {
