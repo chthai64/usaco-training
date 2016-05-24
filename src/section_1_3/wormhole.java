@@ -149,7 +149,7 @@ public class wormhole {
 		return new Input(new FileInputStream(new File(path)));
 	}
 
-	static class Input {
+	private static class Input {
 		private BufferedReader reader;
 		private StringTokenizer stt;
 
