@@ -6,20 +6,18 @@ public class Test {
 
 	@org.junit.Test
 	public void test1() {
-		int N = 5;
-		int M = 7;
-		String expected = "1 4\n37 4\n2 8\n29 8\n"
-				+ "1 12\n5 12\n13 12\n17 12\n5 20\n2 24";
-		assertEquals(expected, ariprog.solve(N, M));
+		int A = 8;
+		int B = 9;
+		int C = 10;
+		assertEquals("1 2 8 9 10", milk3.solve(A, B, C));
 	}
 	
 	@org.junit.Test
 	public void test2() {
-		int N = 22;
-		int M = 250;
-		
-		String expected = "13421 2772";
-		assertEquals(expected, ariprog.solve(N, M));
+		int A = 2;
+		int B = 5;
+		int C = 10;
+		assertEquals("5 6 7 8 9 10", milk3.solve(A, B, C));
 	}
 
 }
