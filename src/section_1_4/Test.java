@@ -12,5 +12,14 @@ public class Test {
 				+ "1 12\n5 12\n13 12\n17 12\n5 20\n2 24";
 		assertEquals(expected, ariprog.solve(N, M));
 	}
+	
+	@org.junit.Test
+	public void test2() {
+		int N = 22;
+		int M = 250;
+		
+		String expected = "13421 2772";
+		assertEquals(expected, ariprog.solve(N, M));
+	}
 
 }

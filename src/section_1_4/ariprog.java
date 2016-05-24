@@ -14,55 +14,95 @@ import java.math.*;
 public class ariprog {
 
 	public static void main(String[] args) throws Exception {
-//		Input in = fromFile("airprog.in");
-//		
-//		int N = in.nextInt();
-//		int M = in.nextInt();
-//		String result = solve(N, M);
-//		
-//		PrintWriter pw = new PrintWriter(new File("aairprog.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
+		Input in = fromFile("ariprog.in");
 		
+		int N = in.nextInt();
+		int M = in.nextInt();
+		String result = solve(N, M);
 		
-		Set<Integer> set = getNumberSet(250);
-		long start = System.currentTimeMillis();
-		
-		for (int a = 0; a <= 10000; a++) {
-			for (int b = 0; b <= 10000; b++) {
-				int count = a*b;
-				set.contains(count);
-			}
-		}
-		long total = System.currentTimeMillis() - start;
-		System.out.println(total + " ms");
-		
+		PrintWriter pw = new PrintWriter(new File("ariprog.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 	}
 	
 	static String solve(int N, int M) {
-		Set<Integer> set = getNumberSet(M);
+		boolean[] correct = getNumberSet(M);
 		
-		for (int a = 0; a <= 10000; a++) {
-			for (int b = 0; b <= 10000; b++) {
-				int count = a*b;
+		int MAX_VALUE = Integer.MIN_VALUE;
+		for (int i = correct.length - 1; i >= 0; i--) {
+			if (correct[i]) {
+				MAX_VALUE = i;
+				break;
 			}
 		}
 		
-		return null;
+		List<Sequence> seqList = new ArrayList<Sequence>();
+		
+		for (int a = 0; a <= MAX_VALUE - N; a++) {
+			if (!correct[a])
+				continue;
+			
+			int b = 1;
+			
+			while (a + (N - 1) * b <= MAX_VALUE) {
+				Sequence seq = new Sequence(a, Integer.MAX_VALUE);
+				boolean valid = true;
+				int prev = -1;
+				
+				for (int n = 0; n < N && valid; n++) {
+					int number = a + n*b;
+					if (correct[number]) {
+						if (prev >= 0) {
+							seq.diff = Math.min(number - prev, seq.diff);
+						}
+						prev = number;
+					} else {
+						valid = false;
+					}
+				}
+				
+				if (valid) {
+					seqList.add(seq);
+				}
+				
+				b++;
+			}
+		}
+		
+		
+		Collections.sort(seqList);
+		return toString(seqList);
+	}
+	
+	static String toString(List<Sequence> seqList) {
+		if (seqList.isEmpty())
+			return "NONE";
+		
+		StringBuilder sb = new StringBuilder();
+		
+		for (int i = 0; i < seqList.size(); i++) {
+			Sequence seq = seqList.get(i);
+			sb.append(seq.first + " " + seq.diff);
+			if (i != seqList.size() - 1) {
+				sb.append("\n");
+			}
+		}
+		
+		return sb.toString();
 	}
 
-	static Set<Integer> getNumberSet(int M) {
-		Set<Integer> set = new HashSet<Integer>();
+	static boolean[] getNumberSet(int M) {
+		boolean[] a = new boolean[125000 + 1];
 		
 		for (int p = 0; p <= M; p++) {
 			for (int q = 0; q <= M; q++) {
 				int number = p*p + q*q;
-				set.add(number);
+				a[number] = true;
 			}
 		}
 		
-		return set;
+		return a;
 	}
 	
 	static class State {
@@ -106,6 +146,13 @@ public class ariprog {
 			
 			return ((Integer) first).compareTo(o.first);
 		}
+
+		@Override
+		public String toString() {
+			return "[first=" + first + ", diff=" + diff + "]";
+		}
+		
+		
 	}
 	
 	private static Input fromFile(String path) throws IOException {
