@@ -18,66 +18,33 @@ public class castle {
 	private static final int WEST = 1;
 
 	public static void main(String[] args) throws Exception {
-		long start = System.currentTimeMillis();
-		Input in = fromFile("/Users/idgmi_dc/Desktop/castle.in");
+		Input in = fromFile("castle.in");
 		
 		int totalCols = in.nextInt();
 		int totalRows = in.nextInt();
-		int[][] mat = new int[totalRows][totalCols];
 		
+		Module[][] castle = new Module[totalRows][totalCols];
 		for (int row = 0; row < totalRows; row++) {
 			for (int col = 0; col < totalCols; col++) {
-				mat[row][col] = in.nextInt();
+				castle[row][col] = new Module(in.nextInt(), 0);
 			}
 		}
 		
-		boolean[][] graph = buildGraph(mat, totalRows, totalCols);
-		String result = solve(graph, totalRows,totalCols);
-		System.out.println(result);
+		String result = solve(castle, totalRows, totalCols);
 		
-		long total = System.currentTimeMillis() - start;
-		System.out.println(total + " ms");
-		
-//		PrintWriter pw = new PrintWriter(new File("castle.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
+		PrintWriter pw = new PrintWriter(new File("castle.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 	}
-	static String solve(boolean[][] graph, int totalRows, int totalCols) {
-		int[] vertexComponent = new int[2501];
-		int[] componentSize = new int[2501];
-		
-		int totalRooms = 0;
-		int largestRoom = 0;
-		
-		boolean[] visited = new boolean[2501];
-		int totalVertices = totalRows * totalCols;
-		
-		for (int vertex = 0; vertex < totalVertices; vertex++) {
-			if (visited[vertex])
-				continue;
 
-			Queue<Integer> queue = new LinkedList<Integer>();
-			queue.add(vertex);
-			visited[vertex] = true;
-			
-			int roomSize = 0;
-			while (!queue.isEmpty()) {
-				roomSize++;
-				int currVertex = queue.poll();
-				vertexComponent[currVertex] = totalRooms;
-				
-				for (int neighbor : getNeighbor(totalRows, totalCols, currVertex)) {
-					if (graph[currVertex][neighbor] && !visited[neighbor]) {
-						visited[neighbor] = true;
-						queue.add(neighbor);
-					}
-				}
-			}
-			
-			largestRoom = Math.max(largestRoom, roomSize);
-			componentSize[totalRooms] = roomSize;
-			totalRooms++;
+	static String solve(Module[][] castle, int totalRows, int totalCols) {
+		int[] roomSizes = new int[totalRows * totalCols];
+		int totalRooms = initRooms(castle, roomSizes, totalRows, totalCols);
+		
+		int maxRoomSize = 0;
+		for (int size : roomSizes) {
+			maxRoomSize = Math.max(maxRoomSize, size);
 		}
 		
 		int rowRemoved = 0;
@@ -87,37 +54,27 @@ public class castle {
 		
 		for (int col = 0; col < totalCols; col++) {
 			for (int row = totalRows - 1; row >= 0; row--) {
-				int vertex = toVertex(totalCols, row, col);
-				
-				// remove north
-				if (row - 1 >= 0) {
-					int neighborVertex = toVertex(totalCols, row - 1, col);
+				// check north
+				if (row - 1 >= 0 && castle[row][col].room != castle[row - 1][col].room) {
+					int sum = roomSizes[castle[row][col].room] + roomSizes[castle[row - 1][col].room];
 					
-					if (vertexComponent[vertex] != vertexComponent[neighborVertex]) {
-						int roomSize = componentSize[vertexComponent[vertex]] + componentSize[vertexComponent[neighborVertex]];
-						
-						if (roomSize > maxSizeRemoved) {
-							maxSizeRemoved = roomSize;
-							rowRemoved = row;
-							colRemoved = col;
-							direction = 'N';
-						}
+					if (sum > maxSizeRemoved) {
+						maxSizeRemoved = sum;
+						rowRemoved = row;
+						colRemoved = col;
+						direction = 'N';
 					}
 				}
 				
-				// remove east
-				if (col + 1 < totalCols) {
-					int neighborVertex = toVertex(totalCols, row, col + 1);
+				// check east
+				if (col + 1 < totalCols && castle[row][col].room != castle[row][col + 1].room) {
+					int sum = roomSizes[castle[row][col].room] + roomSizes[castle[row][col + 1].room];
 					
-					if (vertexComponent[vertex] != vertexComponent[neighborVertex]) {
-						int roomSize = componentSize[vertexComponent[vertex]] + componentSize[vertexComponent[neighborVertex]];
-						
-						if (roomSize > maxSizeRemoved) {
-							maxSizeRemoved = roomSize;
-							rowRemoved = row;
-							colRemoved = col;
-							direction = 'E';
-						}
+					if (sum > maxSizeRemoved) {
+						maxSizeRemoved = sum;
+						rowRemoved = row;
+						colRemoved = col;
+						direction = 'E';
 					}
 				}
 			}
@@ -126,125 +83,74 @@ public class castle {
 		rowRemoved++;
 		colRemoved++;
 		
-		return totalRooms + "\n" + largestRoom + "\n" + maxSizeRemoved + "\n" +
-			   + rowRemoved + " " + colRemoved + " " + direction;
+		return totalRooms + "\n" + maxRoomSize + "\n" + maxSizeRemoved + "\n" +
+				   + rowRemoved + " " + colRemoved + " " + direction;
 	}
 	
-	static List<Integer> getNeighbor(int totalRows, int totalCols, int vertex) {
-		List<Integer> list = new ArrayList<Integer>();
-		Point point = toPoint(totalCols, vertex);
-		
-		// top
-		if (point.row - 1 >= 0) {
-			Point neighbor = new Point(point.row - 1, point.col);
-			list.add(toVertex(totalCols, neighbor));
-		}
-
-		// bottom
-		if (point.row + 1 < totalRows) {
-			Point neighbor = new Point(point.row + 1, point.col);
-			list.add(toVertex(totalCols, neighbor));
-		}
-		
-		// left
-		if (point.col - 1 >= 0) {
-			Point neighbor = new Point(point.row, point.col - 1);
-			list.add(toVertex(totalCols, neighbor));
-		}
-		
-		// right
-		if (point.col + 1 < totalCols) {
-			Point neighbor = new Point(point.row, point.col + 1);
-			list.add(toVertex(totalCols, neighbor));
-		}
-		
-		return list;
-	}
-	
-	static boolean[][] buildGraph(int[][] mat, int totalRows, int totalCols) {
-		int totalVertices = totalRows * totalCols;
-		
-		boolean[][] graph = new boolean[totalVertices][totalVertices];
-		for (boolean[] a : graph) {
-			Arrays.fill(a, true);
-		}
+	static int initRooms(Module[][] castle, int[] roomSizes, int totalRows, int totalCols) {
+		int roomNumber = 0;
 		
 		for (int row = 0; row < totalRows; row++) {
 			for (int col = 0; col < totalCols; col++) {
-				int vertex = toVertex(totalCols, row, col);
-				int walls = mat[row][col];
-				
-				// check south
-				if (walls - SOUTH >= 0) {
-					if (row + 1 < totalRows) {
-						int neighborVertex = toVertex(totalCols, row + 1, col);
-						graph[vertex][neighborVertex] = graph[neighborVertex][vertex] = false;
-					}
-					walls -= SOUTH;
-				}
-				
-				// check east
-				if (walls - EAST >= 0) {
-					if (col + 1 < totalCols) {
-						int neighborVertex = toVertex(totalCols, row, col + 1);
-						graph[vertex][neighborVertex] = graph[neighborVertex][vertex] = false;
-					}
-					walls -= EAST;
-				}
-
-				// check north
-				if (walls - NORTH >= 0) {
-					if (row - 1 >= 0) {
-						int neighborVertex = toVertex(totalCols, row - 1, col);
-						graph[vertex][neighborVertex] = graph[neighborVertex][vertex] = false;
-					}
-					walls -= NORTH;
-				}
-
-				// check west
-				if (walls - WEST >= 0) {
-					if (col - 1 >= 0) {
-						int neighborVertex = toVertex(totalCols, row, col - 1);
-						graph[vertex][neighborVertex] = graph[neighborVertex][vertex] = false;
-					}
-					walls -= WEST;
+				if (!castle[row][col].visited) {
+					int size = dfs(castle, roomNumber, row, col, totalRows, totalCols);
+					roomSizes[roomNumber] = size;
+					roomNumber++;
 				}
 			}
 		}
 		
-		return graph;
+		return roomNumber;
 	}
 	
-	static int toVertex(int totalCols, Point point) {
-		return toVertex(totalCols, point.row, point.col);
-	}
-	
-	static int toVertex(int totalCols, int row, int col) {
-		return row * totalCols + col;
-	}
-	
-	static Point toPoint(int totalCols, int vertex) {
-		int row = vertex / totalCols;
-		int col = vertex % totalCols;
-		return new Point(row, col);
-	}
-	
-	static class Point {
-		int row, col;
+	static int dfs(Module[][] castle, int roomNumber, int row, int col, int totalRows, int totalCols) {
+		int count = 1;
+		int walls = castle[row][col].wall;
+		castle[row][col].room = roomNumber;
+		castle[row][col].visited = true;
 		
-		public Point(int row, int col) {
-			this.row = row;
-			this.col = col;
-		}
-
-		@Override
-		public String toString() {
-			return "[row=" + row + ", col=" + col + "]";
+		// go south
+		if (walls - SOUTH >= 0) {
+			walls -= SOUTH;
+		} else if (row + 1 < totalRows && !castle[row + 1][col].visited) {
+			count += dfs(castle, roomNumber, row + 1, col, totalRows, totalCols);
 		}
 		
+		// go east
+		if (walls - EAST >= 0) {
+			walls -= EAST;
+		} else if (col + 1 < totalCols && !castle[row][col + 1].visited) {
+			count += dfs(castle, roomNumber, row, col + 1, totalRows, totalCols);
+		}
 		
+		// go north
+		if (walls - NORTH >= 0) {
+			walls -= NORTH;
+		} else if (row - 1 >= 0 && !castle[row - 1][col].visited) {
+			count += dfs(castle, roomNumber, row - 1, col, totalRows, totalCols);
+		}
+		
+		// go west
+		if (walls - WEST >= 0) {
+			walls -= WEST;
+		} else if (col - 1 >= 0 && !castle[row][col - 1].visited) {
+			count += dfs(castle, roomNumber, row, col - 1, totalRows, totalCols);
+		}
+		
+		return count;
 	}
-
+	
+	static class Module {
+		int wall;
+		int room;
+		boolean visited = false;
+		
+		public Module(int wall, int room) {
+			this.wall = wall;
+			this.room = room;
+		}
+	}
+	
 	private static Input fromFile(String path) throws IOException {
 		return new Input(new FileInputStream(new File(path)));
 	}
