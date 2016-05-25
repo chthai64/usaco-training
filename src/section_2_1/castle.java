@@ -18,7 +18,8 @@ public class castle {
 	private static final int WEST = 1;
 
 	public static void main(String[] args) throws Exception {
-		Input in = fromFile("C:\\Users\\Chau Thai\\Desktop\\castle.in");
+		long start = System.currentTimeMillis();
+		Input in = fromFile("/Users/idgmi_dc/Desktop/castle.in");
 		
 		int totalCols = in.nextInt();
 		int totalRows = in.nextInt();
@@ -34,45 +35,99 @@ public class castle {
 		String result = solve(graph, totalRows,totalCols);
 		System.out.println(result);
 		
+		long total = System.currentTimeMillis() - start;
+		System.out.println(total + " ms");
+		
 //		PrintWriter pw = new PrintWriter(new File("castle.out"));
 //		pw.println(result);
 //		pw.close();
 //		in.close();
 	}
-	
 	static String solve(boolean[][] graph, int totalRows, int totalCols) {
+		int[] vertexComponent = new int[2501];
+		int[] componentSize = new int[2501];
+		
 		int totalRooms = 0;
 		int largestRoom = 0;
 		
-		Set<Integer> visited = new HashSet<Integer>();
+		boolean[] visited = new boolean[2501];
 		int totalVertices = totalRows * totalCols;
 		
 		for (int vertex = 0; vertex < totalVertices; vertex++) {
-			if (visited.contains(vertex))
+			if (visited[vertex])
 				continue;
-			totalRooms++;
-			
+
 			Queue<Integer> queue = new LinkedList<Integer>();
 			queue.add(vertex);
-			visited.add(vertex);
+			visited[vertex] = true;
 			
 			int roomSize = 0;
 			while (!queue.isEmpty()) {
 				roomSize++;
 				int currVertex = queue.poll();
+				vertexComponent[currVertex] = totalRooms;
 				
 				for (int neighbor : getNeighbor(totalRows, totalCols, currVertex)) {
-					if (graph[currVertex][neighbor] && !visited.contains(neighbor)) {
-						visited.add(neighbor);
+					if (graph[currVertex][neighbor] && !visited[neighbor]) {
+						visited[neighbor] = true;
 						queue.add(neighbor);
 					}
 				}
 			}
 			
 			largestRoom = Math.max(largestRoom, roomSize);
+			componentSize[totalRooms] = roomSize;
+			totalRooms++;
 		}
 		
-		return totalRooms + "\n" + largestRoom;
+		int rowRemoved = 0;
+		int colRemoved = 0;
+		char direction = 'N';
+		int maxSizeRemoved = 0;
+		
+		for (int col = 0; col < totalCols; col++) {
+			for (int row = totalRows - 1; row >= 0; row--) {
+				int vertex = toVertex(totalCols, row, col);
+				
+				// remove north
+				if (row - 1 >= 0) {
+					int neighborVertex = toVertex(totalCols, row - 1, col);
+					
+					if (vertexComponent[vertex] != vertexComponent[neighborVertex]) {
+						int roomSize = componentSize[vertexComponent[vertex]] + componentSize[vertexComponent[neighborVertex]];
+						
+						if (roomSize > maxSizeRemoved) {
+							maxSizeRemoved = roomSize;
+							rowRemoved = row;
+							colRemoved = col;
+							direction = 'N';
+						}
+					}
+				}
+				
+				// remove east
+				if (col + 1 < totalCols) {
+					int neighborVertex = toVertex(totalCols, row, col + 1);
+					
+					if (vertexComponent[vertex] != vertexComponent[neighborVertex]) {
+						int roomSize = componentSize[vertexComponent[vertex]] + componentSize[vertexComponent[neighborVertex]];
+						
+						if (roomSize > maxSizeRemoved) {
+							maxSizeRemoved = roomSize;
+							rowRemoved = row;
+							colRemoved = col;
+							direction = 'E';
+						}
+					}
+				}
+			}
+		}
+		
+		rowRemoved++;
+		colRemoved++;
+		
+		return totalRooms + "\n" + largestRoom + "\n" + maxSizeRemoved + "\n" +
+			   + rowRemoved + " " + colRemoved + " " + direction;
 	}
 	
 	static List<Integer> getNeighbor(int totalRows, int totalCols, int vertex) {
