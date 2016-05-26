@@ -4,7 +4,7 @@ LANG: JAVA
 TASK: frac1
  */
 
-//package section_2_1;
+package section_2_1;
 
 import java.io.*;
 import java.util.*;
@@ -25,18 +25,13 @@ public class frac1 {
 	}
 	
 	static String solve(int N) {
-		Set<Fraction> set = new HashSet<Fraction>();
-		set.add(new Fraction(0, 1));
-		set.add(new Fraction(1, 1));
+		List<Fraction> list = new ArrayList<Fraction>();
+		Fraction start = new Fraction(0, 1);
+		Fraction end = new Fraction(1, 1);
 		
-		for (int denominator = 1; denominator <= N; denominator++) {
-			for (int numerator = 1; numerator < denominator; numerator++) {
-				set.add(new Fraction(numerator, denominator));
-			}
-		}
-		
-		List<Fraction> list = new ArrayList<Fraction>(set);
-		Collections.sort(list);
+		list.add(start);
+		recurse(list, start, end, N);
+		list.add(end);
 		
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < list.size(); i++) {
@@ -47,11 +42,17 @@ public class frac1 {
 		
 		return sb.toString();
 	}
-
-	static int gcd(int a, int b) {
-		if (b == 0)
-			return a;
-		return gcd(b, a%b);
+	
+	static void recurse(List<Fraction> list, Fraction frac1, Fraction frac2, int N) {
+		if (frac1.denominator + frac2.denominator > N)
+			return;
+		
+		Fraction mid = new Fraction(frac1.numerator + frac2.numerator,
+				frac1.denominator + frac2.denominator);
+		
+		recurse(list, frac1, mid, N);
+		list.add(mid);
+		recurse(list, mid, frac2, N);
 	}
 	
 	static class Fraction implements Comparable<Fraction> {
@@ -59,9 +60,8 @@ public class frac1 {
 		int denominator;
 		
 		public Fraction(int numerator, int demoninator) {
-			int gcd = gcd(numerator, demoninator);
-			this.numerator = numerator / gcd;
-			this.denominator = demoninator / gcd;
+			this.numerator = numerator;
+			this.denominator = demoninator;
 		}
 		
 		@Override
