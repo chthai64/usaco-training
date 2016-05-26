@@ -14,7 +14,7 @@ import java.math.*;
 public class holstein {
 
 	public static void main(String[] args) throws Exception {
-		Input in = fromFile("C:\\Users\\Chau Thai\\Desktop\\holstein.in");
+		Input in = fromFile("/Users/idgmi_dc/Desktop/holstein.in");
 		
 		int V = in.nextInt();
 		int[] req = new int[V];
@@ -23,16 +23,21 @@ public class holstein {
 		}
 		
 		int G = in.nextInt();
-		int[][] feedTypes = new int[G][V];
+		Feed[] feeds = new Feed[G];
 		
-		for (int feedIndex = 0; feedIndex < G; feedIndex++) {
-			for (int type = 0; type < V; type++) {
-				feedTypes[feedIndex][type] = in.nextInt();
+		for (int feed = 0; feed < G; feed++) {
+			int[] a = new int[V];
+			
+			for (int i = 0; i < a.length; i++) {
+				a[i] = in.nextInt();
 			}
+			
+			feeds[feed] = new Feed(feed, a);
 		}
 		
-		String result = solve(req, feedTypes, V, G);
-		System.out.println(result);
+//		String result = solve(req, feeds, V, G);
+//		System.out.println(result);
+		
 		
 //		PrintWriter pw = new PrintWriter(new File("holstein.out"));
 //		pw.println(result);
@@ -40,61 +45,24 @@ public class holstein {
 //		in.close();
 	}
 	
-	static String solve(int[] req, int[][] feedTypes, int V, int G) {
-		int[] result = new int[G + 1];
-		int[] needs = req.clone();
-		boolean[] taken = new boolean[G];
-		
-		int count = dfs(result, feedTypes, taken, needs, 0);
-		
-		Arrays.sort(result);
-		StringBuilder sb = new StringBuilder();
-		sb.append(count + " ");
-		
-		for (int i = 0; i < count; i++) {
-			sb.append(result[i] + 1);
-			if (i != count - 1)
-				sb.append(' ');
-		}
-		
-		return sb.toString();
-	}
 	
-	static int dfs(int[] result, int[][] feedTypes, boolean[] taken, int[] needs, int level) {
-		if (done(needs)) {
-			return level;
+	static class Feed {
+		int index;
+		int[] vitamins;
+		
+		public Feed(int index, int[] vitamins) {
+			this.vitamins = vitamins;
+			this.index = index;
 		}
 		
-		int minCount = Integer.MAX_VALUE;
-		int minFeed = 0;
-		
-		for (int feed = 0; feed < feedTypes.length; feed++) {
-			if (taken[feed])
-				continue;
-			
-			taken[feed] = true;
-			int[] original = Arrays.copyOf(needs, needs.length);
-			
-			for (int type = 0; type < needs.length; type++) {
-				needs[type] -= feedTypes[feed][type];
-				needs[type] = Math.max(0, needs[type]);
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof Feed) {
+				Feed feed = (Feed) obj;
+				return index == feed.index;
 			}
-			
-			int count = dfs(result, feedTypes, taken, needs, level + 1);
-			if (count < minCount) {
-				minCount = count;
-				minFeed = feed;
-			}
-			
-			for (int i = 0; i < needs.length; i++) {
-				needs[i] = original[i];
-			}
-			
-			taken[feed] = false;
+			return false;
 		}
-		
-		result[level] = minFeed;
-		return minCount;
 	}
 	
 	static boolean done(int[] needs) {
