@@ -35,8 +35,8 @@ public class holstein {
 			feeds[feed] = new Feed(feed, a);
 		}
 		
-//		String result = solve(req, feeds, V, G);
-//		System.out.println(result);
+		String result = solve(req, feeds, V, G);
+		System.out.println(result);
 		
 		
 //		PrintWriter pw = new PrintWriter(new File("holstein.out"));
@@ -46,6 +46,50 @@ public class holstein {
 	}
 	
 	
+	static String solve(int[] req, Feed[] feeds, int V, int G) {
+		int[] used = new int[G];
+		int[] remains = req.clone();
+		int count = dfs(req, feeds, used, remains, 0, 0, Integer.MAX_VALUE);
+		
+		System.out.println(Arrays.toString(used));
+		
+		String result = count + " ";
+		
+		for (int i = 0; i < count; i++) {
+			result += used[i] + 1;
+			if (i != count - 1)
+				result += " ";
+		}
+		
+		return result;
+	}
+	
+	static int dfs(int[] req, Feed[] feeds, int[] used, int[] remains, int startIndex, int count, int maxCount) {
+		if (count >= maxCount)
+			return Integer.MAX_VALUE;
+		
+		if (done(remains))
+			return count;
+		
+		int minCount = Integer.MAX_VALUE;
+		int minFeed = 0;
+		
+		for (int feedIndex = startIndex; feedIndex < feeds.length; feedIndex++) {
+			int[] r = remains.clone();
+			for (int vita = 0; vita < req.length; vita++) {
+				r[vita] = Math.max(0, r[vita] - feeds[feedIndex].vitamins[vita]);
+			}
+			
+			int currCount = dfs(req, feeds, used, r, startIndex + 1, count + 1, minCount);
+			if (currCount < minCount) {
+				minCount = currCount;
+				minFeed = feedIndex;
+			}
+		}
+		
+		used[count] = minFeed;
+		return minCount;
+	}
 	static class Feed {
 		int index;
 		int[] vitamins;
