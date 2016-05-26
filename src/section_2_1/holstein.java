@@ -41,26 +41,26 @@ public class holstein {
 	}
 	
 	static String solve(int[] req, int[][] feedTypes, int V, int G) {
-		List<Integer> result = new ArrayList<Integer>();
+		int[] result = new int[G + 1];
 		int[] needs = req.clone();
 		boolean[] taken = new boolean[G];
 		
-		dfs(result, feedTypes, taken, needs);
+		int count = dfs(result, feedTypes, taken, needs, 0);
 		
-		Collections.sort(result);
+		Arrays.sort(result);
 		StringBuilder sb = new StringBuilder();
-		sb.append(result.size() + " ");
+		sb.append(count + " ");
 		
-		for (int i = 0; i < result.size(); i++) {
-			sb.append(result.get(i) + 1);
-			if (i != result.size() - 1)
+		for (int i = 0; i < count; i++) {
+			sb.append(result[i] + 1);
+			if (i != count - 1)
 				sb.append(' ');
 		}
 		
 		return sb.toString();
 	}
 	
-	static int dfs(List<Integer> result, int[][] feedTypes, boolean[] taken, int[] needs) {
+	static int dfs(int[] result, int[][] feedTypes, boolean[] taken, int[] needs, int level) {
 		if (done(needs)) {
 			return 0;
 		}
@@ -73,17 +73,28 @@ public class holstein {
 				continue;
 			
 			taken[feed] = true;
+			int[] original = Arrays.copyOf(needs, needs.length);
 			
-			int count = dfs(result, feedTypes, taken, needs);
+			for (int type = 0; type < needs.length; type++) {
+				needs[type] -= feedTypes[feed][type];
+				needs[type] = Math.max(0, needs[type]);
+			}
+			
+			int count = dfs(result, feedTypes, taken, needs, level + 1);
 			if (count < minCount) {
 				minCount = count;
 				minFeed = feed;
 			}
 			
+			for (int i = 0; i < needs.length; i++) {
+				needs[i] = original[i];
+			}
+			
 			taken[feed] = false;
 		}
 		
-		
+		result[level] = minFeed;
+		return minCount + 1;
 	}
 	
 	static boolean done(int[] needs) {
