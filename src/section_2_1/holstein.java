@@ -62,7 +62,7 @@ public class holstein {
 	
 	static int dfs(int[] result, int[][] feedTypes, boolean[] taken, int[] needs, int level) {
 		if (done(needs)) {
-			return 0;
+			return level;
 		}
 		
 		int minCount = Integer.MAX_VALUE;
@@ -94,7 +94,7 @@ public class holstein {
 		}
 		
 		result[level] = minFeed;
-		return minCount + 1;
+		return minCount;
 	}
 	
 	static boolean done(int[] needs) {
