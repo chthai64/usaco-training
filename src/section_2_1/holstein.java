@@ -14,7 +14,7 @@ import java.math.*;
 public class holstein {
 
 	public static void main(String[] args) throws Exception {
-		Input in = fromFile("/Users/idgmi_dc/Desktop/holstein.in");
+		Input in = fromFile("holstein.in");
 		
 		int V = in.nextInt();
 		int[] req = new int[V];
@@ -36,60 +36,73 @@ public class holstein {
 		}
 		
 		String result = solve(req, feeds, V, G);
-		System.out.println(result);
 		
-		
-//		PrintWriter pw = new PrintWriter(new File("holstein.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
+		PrintWriter pw = new PrintWriter(new File("holstein.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 	}
-	
 	
 	static String solve(int[] req, Feed[] feeds, int V, int G) {
 		int[] used = new int[G];
-		int[] remains = req.clone();
-		int count = dfs(req, feeds, used, remains, 0, 0, Integer.MAX_VALUE);
+		int count = 0;
 		
-		System.out.println(Arrays.toString(used));
+		for (int maxLevel = 1; maxLevel <= G; maxLevel++) {
+			int[] tempUsed = new int[G];
+			if (dfs(tempUsed, req.clone(), feeds, 0, 0, maxLevel)) {
+				count = maxLevel;
+				used = tempUsed;
+				break;
+			}
+		}
 		
 		String result = count + " ";
-		
 		for (int i = 0; i < count; i++) {
 			result += used[i] + 1;
 			if (i != count - 1)
 				result += " ";
 		}
-		
+
 		return result;
 	}
 	
-	static int dfs(int[] req, Feed[] feeds, int[] used, int[] remains, int startIndex, int count, int maxCount) {
-		if (count >= maxCount)
-			return Integer.MAX_VALUE;
+	static boolean dfs(int[] used, int[] remains, Feed[] feeds, int startIndex, int level, int maxLevel) {
+		if (done(feeds, used, remains, level)) {
+			return true;
+		}
 		
-		if (done(remains))
-			return count;
-		
-		int minCount = Integer.MAX_VALUE;
-		int minFeed = 0;
+		if (level >= maxLevel)
+			return false;
 		
 		for (int feedIndex = startIndex; feedIndex < feeds.length; feedIndex++) {
-			int[] r = remains.clone();
-			for (int vita = 0; vita < req.length; vita++) {
-				r[vita] = Math.max(0, r[vita] - feeds[feedIndex].vitamins[vita]);
-			}
-			
-			int currCount = dfs(req, feeds, used, r, startIndex + 1, count + 1, minCount);
-			if (currCount < minCount) {
-				minCount = currCount;
-				minFeed = feedIndex;
+			used[level] = feedIndex;
+			if (dfs(used, remains, feeds, feedIndex + 1, level + 1, maxLevel)) {
+				return true;
 			}
 		}
 		
-		used[count] = minFeed;
-		return minCount;
+		return false;
 	}
+	
+	static boolean done(Feed[] feeds, int[] used, int[] remains, int level) {
+		int[] r = remains.clone();
+		
+		for (int i = 0; i < level; i++) {
+			Feed feed = feeds[used[i]];
+			
+			for (int vita = 0; vita < feeds[0].vitamins.length; vita++) {
+				r[vita] -= feed.vitamins[vita];
+			}
+		}
+		
+		for (int value : r) {
+			if (value > 0)
+				return false;
+		}
+		
+		return true;
+	}
+	
 	static class Feed {
 		int index;
 		int[] vitamins;
@@ -109,8 +122,8 @@ public class holstein {
 		}
 	}
 	
-	static boolean done(int[] needs) {
-		for (int i : needs) {
+	static boolean done(int[] remains) {
+		for (int i : remains) {
 			if (i != 0)
 				return false;
 		}
