@@ -14,45 +14,39 @@ import java.math.*;
 public class subset {
 
 	public static void main(String[] args) throws Exception {
-//		Input in = fromFile("subset.in");
-//		int N = in.nextInt();
-//		int result = solve(N);
-//		
-//		PrintWriter pw = new PrintWriter(new File("result.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
+		Input in = fromFile("subset.in");
+		int N = in.nextInt();
+		long result = solve(N);
 		
-		solve(7);
+		PrintWriter pw = new PrintWriter(new File("subset.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 	}
 	
-	static int solve(int N) {
-		int count = 0;
+	static long solve(int N) {
 		int total = (N * (N + 1)) / 2;
 		if (total % 2 != 0)
 			return 0;
 		
-		int[][] DP = new int[N + 1][total/2 + 1];
+		long[][] DP = new long[N + 1][total/2 + 1];
 		
-		for (int n = 0; n <= N; n++) {
-			DP[n][0] = 1;
+		for (int i = 0; i <= N; i++) {
+			DP[i][0] = 1;
 		}
 		
-		for (int sum = 0; sum < DP[0].length; sum++) {
-			for (int n = 1; n < DP.length; n++) {
+		for (int sum = 1; sum < DP[0].length; sum++) {
+			for (int n = 1; n <= N; n++) {
 				if (sum - n >= 0) {
-					DP[n][sum] = DP[n - 1][sum] + DP[n][sum - n];
+					DP[n][sum] = DP[n - 1][sum] + DP[n - 1][sum - n];
 				} else {
 					DP[n][sum] = DP[n - 1][sum];
 				}
 			}
 		}
 		
-		for (int[] a : DP) {
-			System.out.println(Arrays.toString(a));
-		}
 		
-		return count;
+		return DP[N][total/2] / 2;
 	}
 	
 	private static Input fromFile(String path) throws IOException {
