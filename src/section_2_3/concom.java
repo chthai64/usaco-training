@@ -15,10 +15,10 @@ import java.math.*;
 public class concom {
 
 	public static void main(String[] args) throws Exception {
-		Input in = fromFile("C:/Users/Chau Thai/Desktop/concom.in");
+		Input in = fromFile("concom.in");
 		
 		int n = in.nextInt();
-		int[][] mat = new int[6][6];
+		int[][] mat = new int[101][101];
 		
 		for (int i = 0; i < n; i++) {
 			String line = in.nextLine();
@@ -32,34 +32,37 @@ public class concom {
 		
 		String result = solve(mat);
 		
-//		PrintWriter pw = new PrintWriter(new File("concom.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
+		PrintWriter pw = new PrintWriter(new File("concom.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 		
-		System.out.println(result);
+//		System.out.println(result);
 	}
 	
 	static String solve(int[][] mat) {
-		StringBuilder sb = new StringBuilder();
+		boolean[][] marked = new boolean[101][101];
 		
-		for (int com1 = 1; com1 < mat.length; com1++) {
-			for (int com2 = 1; com2 < mat.length; com2++) {
-				
-				if (mat[com1][com2] > 50) {
-					for (int com = 1; com < mat.length; com++) {
-						if (com != com1 && mat[com][com1] > 50) {
-							mat[com][com2] += mat[com1][com2];
+		for (int parent = 1; parent <= 100; parent++) {
+			for (int child = 1; child <= 100; child++) {
+				if (!marked[parent][child] && mat[parent][child] > 50) {
+					marked[parent][child] = true;
+					
+					for (int grandChild = 1; grandChild <= 100; grandChild++) {
+						mat[parent][grandChild] += mat[child][grandChild];
+						
+						if (marked[child][grandChild]) {
+							marked[parent][grandChild] = true;
 						}
 					}
+					
+					
+					child = 0;
 				}
 			}
 		}
 		
-//		for (int[] a : mat) {
-//			System.out.println(Arrays.toString(a));
-//		}
-		
+		StringBuilder sb = new StringBuilder();
 		for (int com1 = 1; com1 < mat.length; com1++) {
 			for (int com2 = 1; com2 < mat.length; com2++) {
 				if (com1 != com2 && mat[com1][com2] > 50) {
@@ -71,6 +74,30 @@ public class concom {
 		return sb.substring(0, sb.length() - 1).toString();
 	}
 
+	static class Pair {
+		int a, b;
+		
+		public Pair(int a, int b) {
+			this.a = a;
+			this.b = b;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof Pair) {
+				Pair pair = (Pair) obj;
+				return a == pair.a && b == pair.b;
+			}
+			
+			return false;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Arrays.hashCode(new int[] {a,b});
+		}
+	}
+	
 	private static Input fromFile(String path) throws IOException {
 		return new Input(new FileInputStream(new File(path)));
 	}
