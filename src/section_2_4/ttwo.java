@@ -28,8 +28,6 @@ public class ttwo {
 		pw.println(result);
 		pw.close();
 		in.close();
-		
-//		System.out.println(result);
 	}
 	
 	static int solve(char[][] grid) {
