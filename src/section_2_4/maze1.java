@@ -14,7 +14,8 @@ import java.math.*;
 public class maze1 {
 
 	public static void main(String[] args) throws Exception {
-		Input in = fromFile("C:/Users/Chau Thai/Desktop/maze1.in");
+		long start = System.currentTimeMillis();
+		Input in = fromFile("maze1.in");
 		int W = in.nextInt();
 		int H = in.nextInt();
 		
@@ -66,98 +67,96 @@ public class maze1 {
 			}
 		}
 		
-		int[][][][] graph = buildGraph(grid, W, H);
+		
+		boolean[][][] graph = buildGraph(grid, W, H);
 		int result = solve(graph, W, H, exit1, exit2);
 		
-//		PrintWriter pw = new PrintWriter(new File("maze1.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
+		PrintWriter pw = new PrintWriter(new File("maze1.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 		
 		System.out.println(result);
+		long total = System.currentTimeMillis() - start;
+		System.out.println("time: " + total + " ms");
+		
 	}
 	
-	static int solve(int[][][][] graph, int W, int H, Point exit1, Point exit2) {
+	static int solve(boolean[][][] graph, int W, int H, Point exit1, Point exit2) {
+		int[][] dist1 = bfs(graph, exit1, W, H);
+		int[][] dist2 = bfs(graph, exit2, W, H);
 		
-		for (int iRow = 0; iRow < H; iRow++) {
-			for (int iCol = 0; iCol < W; iCol++) {
-				for (int row1 = 0; row1 < H; row1++) {
-					for (int col1 = 0; col1 < W; col1++) {
-						for (int row2 = 0; row2 < H; row2++) {
-							for (int col2 = 0; col2 < W; col2++) {
-
-								if (graph[row1][col1][iRow][iCol] != Integer.MAX_VALUE && 
-										graph[iRow][iCol][row2][col2] != Integer.MAX_VALUE) {
-									
-									int otherLength = graph[row1][col1][iRow][iCol] + 
-											graph[iRow][iCol][row2][col2];
-
-									graph[row1][col1][row2][col2] = Math.min(
-											graph[row1][col1][row2][col2],
-											otherLength
-									);
-								}
-							}
-						}						
-					}
-				}
-			}
-		}
-
 		int max = 0;
 		
 		for (int row = 0; row < H; row++) {
 			for (int col = 0; col < W; col++) {
-				int dist1 = Math.max(max, graph[row][col][exit1.row][exit1.col]);
-				int dist2 = Math.max(max, graph[row][col][exit2.row][exit2.col]);
-				max = Math.min(dist1, dist2);
+				int dist = Math.min(dist1[row][col], dist2[row][col]);
+				max = Math.max(dist, max);
 			}
 		}
 		
-		return max + 1;
+		return max;
 	}
-
-	static int[][][][] buildGraph(char[][] grid, int W, int H) {
-		int[][][][] graph = new int[H][W][H][W];
+	
+	static int[] deltaX = {-1,0,1,0};
+	static int[] deltaY = {0,1,0,-1};
+	
+	static int[][] bfs(boolean[][][] graph, Point source, int W, int H) {
+		ArrayDeque<Point> queue = new ArrayDeque<Point>(100);
+		int[][] distances = new int[H][W];
 		
-		for (int row = 0; row < H; row++) {
-			for (int col = 0; col < W; col++) {
-				for (int row2 = 0; row2 < H; row2++) {
-					for (int col2 = 0; col2 < W; col2++) {
-						graph[row][col][row2][col2] = Integer.MAX_VALUE;
-						
-						if (row == row2 && col == col2) {
-							graph[row][col][row2][col2] = 0;
-						}
-					}
+		queue.add(source);
+		distances[source.row][source.col] = 1;
+		
+		while (!queue.isEmpty()) {
+			Point p = queue.pollFirst();
+			
+			for (int i = 0; i < 4; i++) {
+				int nextRow = p.row + deltaX[i];
+				int nextCol = p.col + deltaY[i];
+				
+				boolean validRow = 0 <= nextRow && nextRow < H;
+				boolean validCol = 0 <= nextCol && nextCol < W;
+				
+				Point nextPoint = new Point(nextRow, nextCol);
+				
+				if (validRow && validCol && graph[p.row][p.col][i] && distances[nextRow][nextCol] == 0) {
+					distances[nextRow][nextCol] = distances[p.row][p.col] + 1;
+					queue.addLast(nextPoint);
 				}
 			}
 		}
+		
+		return distances;
+	}
+	
+	static boolean[][][] buildGraph(char[][] grid, int W, int H) {
+		boolean[][][] graph = new boolean[H][W][4];
 		
 		for (int row = 0; row < H; row++) {
 			for (int col = 0; col < W; col++) {
 				// top
 				if (row - 1 >= 0) {
 					if (grid[getRawIndex(row) - 1][getRawIndex(col)] == ' ')
-						graph[row][col][row - 1][col] = 1;
+						graph[row][col][0] = true;
 				}
 				
 				// bottom
 				if (row + 1 < H) {
 					if (grid[getRawIndex(row) + 1][getRawIndex(col)] == ' ')
-						graph[row][col][row + 1][col] = 1;
+						graph[row][col][2]= true;
 				}
 				
 				// left
 				if (col - 1 >= 0) {
 					if (grid[getRawIndex(row)][getRawIndex(col) - 1] == ' ')
-						graph[row][col][row][col - 1] = 1;
+						graph[row][col][3]= true;
 				}
 				
 				// right
 				if (col + 1 < W) {
 					if (grid[getRawIndex(row)][getRawIndex(col) + 1] == ' ')
-						graph[row][col][row][col + 1] = 1;
+						graph[row][col][1] = true;
 				}
 			}
 		}
