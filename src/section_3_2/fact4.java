@@ -23,25 +23,29 @@ public class fact4 {
 		pw.println(result);
 		pw.close();
 		in.close();
-		
-//		System.out.println(solve(143)); // 4
 	}
 
 	static int solve(int N) {
 		int number = 1;
-		int mul = 1;
 		
-		while (mul <= N) {
-			number = (number * mul) % 100000;
-			while (number % 10 == 0) {
-				number /= 10;
+		for (int mul = 2; mul <= N; mul++) {
+			int mulFive = mul;
+			int countFive = 0;
+			while (mulFive % 5 == 0) {
+				mulFive /= 5;
+				countFive++;
 			}
-			mul++;
+
+			int reduceMul = mul;
+			for (int i = 0; i < countFive; i++) {
+				reduceMul /= 5;
+				number /= 2;
+			}
+			
+			number *= reduceMul;
+			number %= 1000;
 		}
 		
-		while (number % 10 == 0) {
-			number /= 10;
-		}
 		return number % 10;
 	}
 	
