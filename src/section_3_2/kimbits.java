@@ -17,7 +17,7 @@ public class kimbits {
 		Input in = fromFile("kimbits.in");
 		int N = in.nextInt();
 		int L = in.nextInt();
-		int I = in.nextInt();
+		long I = in.nextLong();
 		
 		String result = solve(N, L, I);
 		
@@ -25,26 +25,45 @@ public class kimbits {
 		pw.println(result);
 		pw.close();
 		in.close();
-		
-//		System.out.println(solve(5, 3, 19));
-//		System.out.println(countOne(5));
 	}
 	
-	static String solve(int N, int L, int I) {
-		int number = I - 1;
+	static String solve(int N, int L, long I) {
+		long[][] DP = new long[N + 1][L + 1];
 		
-		for (int l = 31; l >= L; l--) {
-			while (countOne(number) > l) {
-				number++;
+		for (int n = 0; n <= N; n++) {
+			for (int l = 0; l <= L; l++) {
+				DP[n][l] = combination(n, l);
+				if (l - 1 >= 0) {
+					DP[n][l] += DP[n][l - 1];
+				}
 			}
 		}
 		
-		String result = Integer.toBinaryString(number);
-		while (result.length() < N) {
-			result = "0" + result;
+		String result = "";
+		
+		int n = N;
+		int l = L;
+		long i = I;
+		
+		while (n > 0) {
+			// check if it's possible with first bit is zero
+			if (DP[n - 1][l] >= i) {
+				result += "0";
+			} else {
+				result += "1";
+				i -= DP[n - 1][l];
+				l--;
+			}
+			
+			n--;
 		}
 		
 		return result;
+	}
+	
+	static int needToBoost(int n, int maxOnes) {
+		String binary = Integer.toBinaryString(n);
+		return (int) combination(binary.length() - 1, maxOnes + 1);
 	}
 	
 	static int countOne(int n) {
@@ -57,6 +76,25 @@ public class kimbits {
 		}
 		
 		return count;
+	}
+	
+	static long combination(int n, int r) {
+		if (n < r)
+			return 0;
+		
+		double result = 1;
+
+		for (long i = n; i >= 1; i--) {
+			if (i > r) {
+				result *= i;
+			}
+			
+			if (i <= n - r) {
+				result /= i;
+			}
+		}
+		
+		return Math.round(result);
 	}
 
 	private static Input fromFile(String path) throws IOException {
