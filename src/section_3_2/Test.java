@@ -2,37 +2,29 @@ package section_3_2;
 
 import static org.junit.Assert.*;
 
+import section_3_2.ratios.Mixture;
+
 public class Test {
 
 	@org.junit.Test
 	public void test1() {
-		int N = 5;
-		int L = 3;
-		int I = 19;
-		assertEquals("10011", kimbits.solve(N, L, I));
+		Mixture golden = new Mixture(3,4,5);
+		Mixture[] mixtures = {
+			new Mixture(1,2,3),
+			new Mixture(3,7,1),
+			new Mixture(2,1,2)
+		};
+		assertEquals("8 1 5 7", ratios.solve(mixtures, golden));
 	}
-
+	
 	@org.junit.Test
 	public void test2() {
-		int N = 4;
-		int L = 2;
-		int I = 1;
-		assertEquals("0000", kimbits.solve(N, L, I));
-	}
-	
-	@org.junit.Test
-	public void test3() {
-		int N = 10;
-		int L = 2;
-		int I = 56;
-		assertEquals("1100000000", kimbits.solve(N, L, I));
-	}
-	
-	@org.junit.Test
-	public void test4() {
-		int N = 31;
-		int L = 31;
-		long I = 2147483648L;
-		assertEquals("1111111111111111111111111111111", kimbits.solve(N, L, I));
+		Mixture golden = new Mixture(5,8,0);
+		Mixture[] mixtures = {
+			new Mixture(3,5,4),
+			new Mixture(1,3,0),
+			new Mixture(6,2,0)
+		};
+		assertEquals("0 38 7 16", ratios.solve(mixtures, golden));
 	}
 }
