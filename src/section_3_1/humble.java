@@ -4,7 +4,7 @@ LANG: JAVA
 TASK: humble
  */
 
-package sectoin_3_1;
+package section_3_1;
 
 import java.io.*;
 import java.util.*;

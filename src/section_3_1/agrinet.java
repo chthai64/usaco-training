@@ -1,54 +1,82 @@
 /*
 ID: conchim1
 LANG: JAVA
-TASK: inflate
+TASK: agrinet
  */
 
-package sectoin_3_1;
+package section_3_1;
 
 import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.math.*;
 
-public class inflate {
+public class agrinet {
 
 	public static void main(String[] args) throws Exception {
-		Input in = fromFile("inflate.in");
-
-		int M = in.nextInt();
+		Input in = fromFile("C:/Users/Chau Thai/Desktop/agrinet.in");
 		int N = in.nextInt();
+		int[][] mat = new int[N][N];
 		
-		
-
-		int[] points = new int[N];
-		int[] times = new int[N];
-		
-		for (int i = 0; i < N; i++) {
-			points[i] = in.nextInt();
-			times[i] = in.nextInt();
+		for (int row = 0; row < N; row++) {
+			for (int col = 0; col < N; col++) {
+					mat[row][col] = in.nextInt();
+			}
 		}
 		
-		int result = solve(M, points, times);
+		int result = solve(mat, N);
 		
-		PrintWriter pw = new PrintWriter(new File("inflate.out"));
+		PrintWriter pw = new PrintWriter(new File("agrinet.out"));
 		pw.println(result);
 		pw.close();
 		in.close();
+		
+		System.out.println(result);
 	}
-
-	static int solve(int M, int[] points, int[] times) {
-		int[] DP = new int[M + 1];
-
-		for (int problem = 0; problem < points.length; problem++) {
-			for (int time = 1; time <= M; time++) {
-				if (time - times[problem] >= 0) {
-					DP[time] = Math.max(DP[time], points[problem] + DP[time - times[problem]]);
+	
+	// no priority queue
+	static int solve(int[][] mat, int N) {
+		boolean[] inTree = new boolean[N];
+		int[] distance = new int[N];
+		int[] closestToTree = new int[N];
+		
+		int treeSize = 1;
+		int span = 0;
+		
+		Arrays.fill(distance, Integer.MAX_VALUE);
+		inTree[0] = true;
+		
+		for (int i = 1; i < N; i++) {
+			closestToTree[i] = 0;
+			distance[i] = mat[0][i];
+		}
+		
+		while (treeSize < N) {
+			// find closest
+			int vertex = 0;
+			int dist = Integer.MAX_VALUE;
+			
+			for (int i = 0; i < N; i++) {
+				if (!inTree[i] && distance[i] < dist) {
+					dist = distance[i];
+					vertex = i;
+				}
+			}
+			
+			inTree[vertex] = true;
+			treeSize++;
+			span += dist;
+			
+			// update distance
+			for (int i = 0; i < N; i++) {
+				if (!inTree[i] && mat[vertex][i] < distance[i]) {
+					distance[i] = mat[vertex][i];
+					closestToTree[i] = vertex;
 				}
 			}
 		}
-
-		return DP[M];
+		
+		return span;
 	}
 
 	private static Input fromFile(String path) throws IOException {

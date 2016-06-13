@@ -1,82 +1,54 @@
 /*
 ID: conchim1
 LANG: JAVA
-TASK: agrinet
+TASK: inflate
  */
 
-package sectoin_3_1;
+package section_3_1;
 
 import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.math.*;
 
-public class agrinet {
+public class inflate {
 
 	public static void main(String[] args) throws Exception {
-		Input in = fromFile("C:/Users/Chau Thai/Desktop/agrinet.in");
+		Input in = fromFile("inflate.in");
+
+		int M = in.nextInt();
 		int N = in.nextInt();
-		int[][] mat = new int[N][N];
 		
-		for (int row = 0; row < N; row++) {
-			for (int col = 0; col < N; col++) {
-					mat[row][col] = in.nextInt();
-			}
+		
+
+		int[] points = new int[N];
+		int[] times = new int[N];
+		
+		for (int i = 0; i < N; i++) {
+			points[i] = in.nextInt();
+			times[i] = in.nextInt();
 		}
 		
-		int result = solve(mat, N);
+		int result = solve(M, points, times);
 		
-		PrintWriter pw = new PrintWriter(new File("agrinet.out"));
+		PrintWriter pw = new PrintWriter(new File("inflate.out"));
 		pw.println(result);
 		pw.close();
 		in.close();
-		
-		System.out.println(result);
 	}
-	
-	// no priority queue
-	static int solve(int[][] mat, int N) {
-		boolean[] inTree = new boolean[N];
-		int[] distance = new int[N];
-		int[] closestToTree = new int[N];
-		
-		int treeSize = 1;
-		int span = 0;
-		
-		Arrays.fill(distance, Integer.MAX_VALUE);
-		inTree[0] = true;
-		
-		for (int i = 1; i < N; i++) {
-			closestToTree[i] = 0;
-			distance[i] = mat[0][i];
-		}
-		
-		while (treeSize < N) {
-			// find closest
-			int vertex = 0;
-			int dist = Integer.MAX_VALUE;
-			
-			for (int i = 0; i < N; i++) {
-				if (!inTree[i] && distance[i] < dist) {
-					dist = distance[i];
-					vertex = i;
-				}
-			}
-			
-			inTree[vertex] = true;
-			treeSize++;
-			span += dist;
-			
-			// update distance
-			for (int i = 0; i < N; i++) {
-				if (!inTree[i] && mat[vertex][i] < distance[i]) {
-					distance[i] = mat[vertex][i];
-					closestToTree[i] = vertex;
+
+	static int solve(int M, int[] points, int[] times) {
+		int[] DP = new int[M + 1];
+
+		for (int problem = 0; problem < points.length; problem++) {
+			for (int time = 1; time <= M; time++) {
+				if (time - times[problem] >= 0) {
+					DP[time] = Math.max(DP[time], points[problem] + DP[time - times[problem]]);
 				}
 			}
 		}
-		
-		return span;
+
+		return DP[M];
 	}
 
 	private static Input fromFile(String path) throws IOException {
