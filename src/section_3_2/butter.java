@@ -14,8 +14,7 @@ import java.math.*;
 public class butter {
 
 	public static void main(String[] args) throws Exception {
-		long start = System.currentTimeMillis();
-		Input in = fromFile("C:/Users/Chau Thai/Desktop/butter.in");
+		Input in = fromFile("Cbutter.in");
 		
 		int N = in.nextInt();
 		int P = in.nextInt();
@@ -44,15 +43,10 @@ public class butter {
 		
 		int result = solve(P, cowCount, mapAdj);
 		
-//		PrintWriter pw = new PrintWriter(new File("butter.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
-		
-		System.out.println(result);
-		
-		long total = System.currentTimeMillis() - start;
-		System.out.println("time: " + total + " ms");
+		PrintWriter pw = new PrintWriter(new File("butter.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 	}
 	
 	static int solve(int totalNodes, int[] cowCount, Map<Integer, List<Node>> mapAdj) {
