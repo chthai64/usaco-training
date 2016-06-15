@@ -14,7 +14,7 @@ import java.math.*;
 public class butter {
 
 	public static void main(String[] args) throws Exception {
-		Input in = fromFile("Cbutter.in");
+		Input in = fromFile("butter.in");
 		
 		int N = in.nextInt();
 		int P = in.nextInt();
