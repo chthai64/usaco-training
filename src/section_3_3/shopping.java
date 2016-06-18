@@ -12,127 +12,155 @@ import java.text.*;
 import java.math.*;
 
 public class shopping {
-	static Offer[] offers;
-	static Product[] products;
-	static int[] purchaseCount;
-	
 	public static void main(String[] args) throws Exception {
 		Input in = fromFile("shopping.in");
 	
 		offers = new Offer[in.nextInt()];
 		for (int i = 0; i < offers.length; i++) {
-			Pair[] productOffered = new Pair[in.nextInt()];
+			int n = in.nextInt();
+			Map<Integer, Integer> productCount = new HashMap<Integer, Integer>();
 			
-			for (int j = 0; i < productOffered.length; j++) {
-				productOffered[i] = new Pair(in.nextInt(), in.nextInt());
+			for (int j = 0; j < n; j++) {
+				int productCode = in.nextInt();
+				int count = in.nextInt();
+				productCount.put(productCode, count);
 			}
 			
-			offers[i] = new Offer(productOffered, in.nextInt());
+			offers[i] = new Offer(productCount, in.nextInt());
 		}
 		
-		products = new Product[in.nextInt()];
-		purchaseCount = new int[1000];
+		int totalProducts = in.nextInt();
+		products = new Product[totalProducts];
+		purchaseCount = new int[5];
 		
-		for (int i = 0; i < products.length; i++) {
+		for (int i = 0; i < totalProducts; i++) {
 			int code = in.nextInt();
 			int count = in.nextInt();
 			int price = in.nextInt();
-			
+		
+			mapCodeToIndex.put(code, i);
 			products[i] = new Product(code, price);
-			purchaseCount[code] = count;
+			purchaseCount[i] = count;
 		}
 		
 		int result = solve();
 		
-//		PrintWriter pw = new PrintWriter(new File("shopping.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
-		
-		System.out.println(result);
+		PrintWriter pw = new PrintWriter(new File("shopping.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 	}
+	
+	static Offer[] offers;
+	static Product[] products;
+	static int[] purchaseCount;
+	static Map<Integer, Integer> mapCodeToIndex = new HashMap<Integer, Integer>();
 	
 	static int solve() {
-		DPItem[][] DP = new DPItem[offers.length + 1][offers.length + 1];
+		int[][][][][] DP = new int[6][6][6][6][6];
+		initDP(DP);
 		
-		for (int i = 0; i < DP.length; i++) {
-			DP[0][i] = getDefault();
-			DP[i][0] = getDefault();
-		}
-		
-		for (int n = 1; n <= offers.length; n++) {
-			for (int offer = 1; offer <= offers.length; offer++) {
-				DP[n][offer] = DP[n][offer - 1].clone();
-				
-				// check if using offer will produce better result
-				processDP(DP, n, offer);
-			}
-		}
-		
-		return DP[DP.length - 1][DP.length - 1].totalCost;
-	}
-	
-	static void processDP(DPItem[][] DP, int n, int offer) {
-		for (int prevN = n - 1; prevN >= 0; prevN--) {
-			for (int prevOffer = offer - 1; prevOffer >= 0; prevOffer--) {
-				if (canUseOffer(DP, prevN, prevOffer, offer)) {
-					
+		for (int n0 = 0; n0 <= purchaseCount[0]; n0++) {
+			for (int n1 = 0; n1 <= purchaseCount[1]; n1++) {
+				for (int n2 = 0; n2 <= purchaseCount[2]; n2++) {
+					for (int n3 = 0; n3 <= purchaseCount[3]; n3++) {
+						for (int n4 = 0; n4 <= purchaseCount[4]; n4++) {
+							
+							for (Offer offer : offers) {
+								int[] state = new int[] {n0, n1, n2, n3, n4};
+								
+								if (canUseOffer(DP, state, offer)) {
+									int payed = DP[n0][n1][n2][n3][n4];
+									
+									for (Map.Entry<Integer, Integer> entry : offer.productCount.entrySet()) {
+										int offerProdIndex = getIndex(entry.getKey());
+										int offerProdCount = entry.getValue();
+										
+										state[offerProdIndex] += offerProdCount;
+									}
+									payed += offer.price;
+									
+									if (payed < 0) {
+										System.out.println("wrong");
+									}
+									
+									if (payed < DP[state[0]][state[1]][state[2]][state[3]][state[4]]) {
+										DP[state[0]][state[1]][state[2]][state[3]][state[4]] = payed;
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
+		
+		return DP[purchaseCount[0]]
+				 [purchaseCount[1]]
+				 [purchaseCount[2]]
+			     [purchaseCount[3]]
+			     [purchaseCount[4]];
 	}
 	
-	static boolean canUseOffer(DPItem[][] DP, int prevN, int prevOffer, int offerIndex) {
-		DPItem prevItem = DP[prevN][prevOffer];
-		Offer offer = offers[offerIndex - 1];
+	static void initDP(int[][][][][] DP) {
+		for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < 6; j++) {
+				for (int m = 0; m < 6; m++) {
+					for (int n = 0; n < 6; n++) {
+						for (int k = 0; k < 6; k++) {
+							int[] state = {i,j,m,n,k};
+							int pay = 0;
+							
+							for (int product = 0; product < products.length; product++) {
+								pay += state[product] * products[product].price;
+							}
+							
+							DP[i][j][m][n][k] = pay;
+						}
+					}
+				}
+			}
+		}
 		
-		// should use map instead of pair
-		for (Pair pair : offer.productOffered) {
+		DP[0][0][0][0][0] = 0;
+	}
+	
+	static boolean canUseOffer(int DP[][][][][], int[] state, Offer offer) {
+		for (Map.Entry<Integer, Integer> entry : offer.productCount.entrySet()) {
+			int offerProdIndex = getIndex(entry.getKey());
+			int offerProdCount = entry.getValue();
+			
+			int prodLeft = purchaseCount[offerProdIndex] - state[offerProdIndex];
+			
+			if (prodLeft < offerProdCount) {
+				return false;
+			}
 		}
 		
 		return true;
 	}
 	
-	static DPItem getDefault() {
-		int totalCost = 0;
-		Pair[] pairs = new Pair[products.length];
-		
-		for (int i = 0; i < products.length; i++) {
-			pairs[i] = new Pair(products[i].code, purchaseCount[products[i].code]);
-			totalCost += products[i].price * purchaseCount[products[i].code];
-		}
-		
-		return new DPItem(pairs, totalCost, totalCost);
-	}
-	
-	static class DPItem {
-		Pair[] pairs;  // pair.count is # of count that haven't used in offer.
-		int totalCost; 
-		int costNoOffer; // cost of buying without using any offer.
-		
-		public DPItem(Pair[] pairs, int totalCost, int costNoOffer) {
-			this.pairs = pairs;
-			this.totalCost = totalCost;
-			this.costNoOffer = costNoOffer;
-		}
-		
-		public DPItem clone() {
-			Pair[] clonePairs = new Pair[pairs.length];
-			for (int i = 0; i < pairs.length; i++) {
-				clonePairs[i] = new Pair(pairs[i].code, pairs[i].count);
-			}
-			return new DPItem(clonePairs, totalCost, costNoOffer);
-		}
+	static int getIndex(int code) {
+		if (!mapCodeToIndex.containsKey(code))
+			return -1;
+		return mapCodeToIndex.get(code);
 	}
 	
 	static class Offer {
-		Pair[] productOffered;
+		Map<Integer, Integer> productCount;
 		int price;
 	
-		public Offer(Pair[] productOffered, int price) {
-			this.productOffered = productOffered;
+		public Offer(Map<Integer, Integer> productCount, int price) {
 			this.price = price;
+			this.productCount = productCount;
 		}
+
+		@Override
+		public String toString() {
+			return "Offer [productCount=" + productCount + ", price=" + price + "]";
+		}
+		
+		
 	}
 	
 	static class Product {
@@ -143,15 +171,10 @@ public class shopping {
 			this.code = code;
 			this.price = price;
 		}
-	}
 
-	static class Pair {
-		int code;
-		int count;
-		
-		public Pair(int code, int count) {
-			this.code = code;
-			this.count = count;
+		@Override
+		public String toString() {
+			return "Product [code=" + code + ", price=" + price + "]";
 		}
 	}
 	
