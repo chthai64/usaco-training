@@ -39,6 +39,8 @@ public class range {
 	static String solve(boolean[][] mat) {
 		final int MAX_SIZE = mat.length + 1;
 		int[] sizeCount = new int[MAX_SIZE];
+		
+		// we could use two 2D-array instead of one huge 3D-array.
 		boolean[][][] DP = new boolean[MAX_SIZE][mat.length][mat.length]; // [size][rowStart][colStart]
 
 		// init DP with size = 1
