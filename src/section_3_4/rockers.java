@@ -14,38 +14,82 @@ import java.math.*;
 public class rockers {
 
 	public static void main(String[] args) throws Exception {
-//		Input in = fromFile("rockers.in");
-//		
-//		int N = in.nextInt();
-//		int T = in.nextInt();
-//		int M = in.nextInt();
-//		
-//		int[] songs = new int[N];
-//		for (int i = 0; i < N; i++) {
-//			songs[i] = in.nextInt();
-//		}
-//		
-//		int result = solve(songs, M, T);
-//		
-//		PrintWriter pw = new PrintWriter(new File("rockers.out"));
-//		pw.println(result);
-//		pw.close();
-//		in.close();
+		Input in = fromFile("rockers.in");
+		
+		int N = in.nextInt();
+		int T = in.nextInt();
+		int M = in.nextInt();
+		
+		int[] songs = new int[N];
+		for (int i = 0; i < N; i++) {
+			songs[i] = in.nextInt();
+		}
+		
+		int result = solve(songs, M, T);
+		
+		PrintWriter pw = new PrintWriter(new File("rockers.out"));
+		pw.println(result);
+		pw.close();
+		in.close();
 	}
 
 	static int solve(int[] songs, int M, int T) {
-		
-		
-		return 0;
+		boolean[] selected = new boolean[songs.length];
+		return recurse(songs, selected, M, T, 1, T);
 	}
 	
 	static int recurse(int[] songs, boolean[] selected, int M, int T, int currentSet, int timeLeft) {
-		if (currentSet > M)
-			return 0;
+		int count = 0;
+		for (boolean b : selected) {
+			if (b) {
+				count++;
+			}
+		}
 		
-		int ans = 0;
+		for (int i = 0; i < selected.length; i++) {
+			if (!selected[i]) {
+				selected[i] = true;
+				if (songs[i] <= timeLeft) {
+					count = Math.max(count, recurse(songs, selected, M, T, currentSet, timeLeft - songs[i]));
+				}
+				
+				if (currentSet < M && songs[i] <= T) {
+					count = Math.max(count, recurse(songs, selected, M, T, currentSet + 1, T - songs[i]));
+				}
+				selected[i] = false;
+			}
+		}
 		
-		return ans;
+		return count;
+	}
+	
+	static class State {
+		boolean[] selected;
+		int currentSet, timeLeft;
+		
+		public State(boolean[] selected, int currentSet, int timeLeft) {
+			this.selected = selected.clone();
+			this.currentSet = currentSet;
+			this.timeLeft = timeLeft;
+		}
+		
+		@Override
+		public int hashCode() {
+			return currentSet * 31 + timeLeft;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof State) {
+				State state = (State) obj;
+				
+				return Arrays.equals(selected, state.selected)
+						&& currentSet == state.currentSet 
+						&& timeLeft == state.timeLeft;
+			}
+			
+			return false;
+		}
 	}
 
 	// Helper methods, classes
