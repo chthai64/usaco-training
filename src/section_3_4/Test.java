@@ -22,4 +22,13 @@ public class Test {
 		
 		assertEquals(14, rockers.solve(songs, M, T));
 	}
+	
+	@org.junit.Test
+	public void test3() {
+		int[] songs = {6};
+		int T = 1;
+		int M = 5;
+		
+		assertEquals(0, rockers.solve(songs, M, T));
+	}
 }

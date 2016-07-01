@@ -15,79 +15,78 @@ public class rockers {
 
 	public static void main(String[] args) throws Exception {
 		Input in = fromFile("rockers.in");
-		
+
 		int N = in.nextInt();
 		int T = in.nextInt();
 		int M = in.nextInt();
-		
+
 		int[] songs = new int[N];
 		for (int i = 0; i < N; i++) {
 			songs[i] = in.nextInt();
 		}
-		
+
 		int result = solve(songs, M, T);
-		
+
 		PrintWriter pw = new PrintWriter(new File("rockers.out"));
 		pw.println(result);
 		pw.close();
 		in.close();
 	}
 
-	static int solve(int[] songs, int M, int T) {
-		boolean[] selected = new boolean[songs.length];
-		return recurse(songs, selected, M, T, 1, T);
-	}
-	
-	static int recurse(int[] songs, boolean[] selected, int M, int T, int currentSet, int timeLeft) {
-		int count = 0;
-		for (boolean b : selected) {
-			if (b) {
-				count++;
-			}
+	static int solve(int[] a, int M, int T) {
+		// add zero length song in the beginning.
+		int[] durations = new int[a.length + 1];
+		for (int i = 1; i < durations.length; i++) {
+			durations[i] = a[i - 1];
 		}
-		
-		for (int i = 0; i < selected.length; i++) {
-			if (!selected[i]) {
-				selected[i] = true;
-				if (songs[i] <= timeLeft) {
-					count = Math.max(count, recurse(songs, selected, M, T, currentSet, timeLeft - songs[i]));
-				}
-				
-				if (currentSet < M && songs[i] <= T) {
-					count = Math.max(count, recurse(songs, selected, M, T, currentSet + 1, T - songs[i]));
-				}
-				selected[i] = false;
-			}
-		}
-		
-		return count;
+
+		int[][][] DP = new int[M + 1][T + 1][durations.length];
+
+		for(int m = 1; m <= M; m++) {
+	          for(int t = 0; t <= T; t++) { 
+	               for(int song = 1; song < durations.length; song++) { 
+	            	   if (t == 0) {
+	            		   DP[m][t][song] = DP[m - 1][T][song];
+	            	   }
+	            	   else if (t - durations[song] >= 0) {
+	            		   DP[m][t][song] = Math.max(DP[m][t][song], 
+	            				   DP[m][t - durations[song]][song - 1] + 1);
+	            	   }
+	            	   else {
+	            		   DP[m][t][song] = Math.max(DP[m][t][song - 1], DP[m - 1][T][song]);
+	            	   }
+	               }
+	          }
+	     }
+
+		return DP[M][T][durations.length - 1];
 	}
-	
+
 	static class State {
 		boolean[] selected;
 		int currentSet, timeLeft;
-		
+
 		public State(boolean[] selected, int currentSet, int timeLeft) {
 			this.selected = selected.clone();
 			this.currentSet = currentSet;
 			this.timeLeft = timeLeft;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			return currentSet * 31 + timeLeft;
 		}
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof State) {
 				State state = (State) obj;
-				
+
 				return Arrays.equals(selected, state.selected)
 						&& currentSet == state.currentSet 
 						&& timeLeft == state.timeLeft;
 			}
-			
+
 			return false;
 		}
 	}
