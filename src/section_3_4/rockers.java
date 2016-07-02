@@ -34,6 +34,7 @@ public class rockers {
 	}
 
 	static int solve(int[] a, int M, int T) {
+		
 		// add zero length song in the beginning.
 		int[] durations = new int[a.length + 1];
 		for (int i = 1; i < durations.length; i++) {
@@ -60,35 +61,6 @@ public class rockers {
 	     }
 
 		return DP[M][T][durations.length - 1];
-	}
-
-	static class State {
-		boolean[] selected;
-		int currentSet, timeLeft;
-
-		public State(boolean[] selected, int currentSet, int timeLeft) {
-			this.selected = selected.clone();
-			this.currentSet = currentSet;
-			this.timeLeft = timeLeft;
-		}
-
-		@Override
-		public int hashCode() {
-			return currentSet * 31 + timeLeft;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof State) {
-				State state = (State) obj;
-
-				return Arrays.equals(selected, state.selected)
-						&& currentSet == state.currentSet 
-						&& timeLeft == state.timeLeft;
-			}
-
-			return false;
-		}
 	}
 
 	// Helper methods, classes
