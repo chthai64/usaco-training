@@ -15,7 +15,7 @@ public class Test {
 		int[] boxes = {251, 252, 250, 254, 256};
 		assertEquals(10749, nuggets.solve(boxes));
 	}
-	
+
 	@org.junit.Test
 	public void test3() {
 		int[] boxes = {255, 254};
