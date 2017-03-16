@@ -4,7 +4,7 @@ LANG: JAVA
 TASK: stall4
  */
 
-package section_4_1;
+package section_4_2;
 
 import java.io.*;
 import java.util.*;
