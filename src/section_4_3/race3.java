@@ -12,15 +12,14 @@ import java.text.*;
 import java.math.*;
 
 public class race3 {
-	private static final String PATH = "/Users/chau/Documents/workspace/usaco-training/src/section_4_3/race3.in";
-	
+	private static final int MAX_POINTS = 50;
 	
 	public static void main(String[] args) throws Exception {
 		 solve(getGraph());
 	}
 	
 	static Map<Integer, Set<Integer>> getGraph() throws Exception {
-		Input in = fromFile(PATH);
+		Input in = fromFile("race3.in");
 		Map<Integer, Set<Integer>> graph = new HashMap<>();
 		
 		int d = in.nextInt();
@@ -44,19 +43,27 @@ public class race3 {
 		return graph;
 	}
 	
-	static void solve(Map<Integer, Set<Integer>> graph) {
+	static void solve(Map<Integer, Set<Integer>> graph) throws FileNotFoundException {
 		List<Integer> unavoids = getUnavoidablePoints(graph);
+		List<Integer> splits = getSplits(graph, unavoids);
 		
-		System.out.print(unavoids.size());
-		for (int i = 0; i < unavoids.size(); i++) {
-			System.out.print(" " + unavoids.get(i));
-		}
-		System.out.println();
+		PrintWriter pw = new PrintWriter("race3.out");
+		printList(unavoids, pw);
+		printList(splits, pw);
+		pw.close();
 	}
+	
+	static void printList(List<Integer> list, PrintWriter pw) {
+		pw.print(list.size());
+		for (int i = 0; i < list.size(); i++) {
+			pw.print(" " + list.get(i));
+		}
+		pw.println();
+	}
+	
 	
 	static List<Integer> getUnavoidablePoints(Map<Integer, Set<Integer>> graph) {
 		List<Integer> unavoids = new ArrayList<>();
-		
 		for (int p : graph.keySet()) {
 			if (isUnavoidable(graph, p)) {
 				unavoids.add(p);
@@ -67,13 +74,26 @@ public class race3 {
 		return unavoids;
 	}
 	
+	static List<Integer> getSplits(Map<Integer, Set<Integer>> graph, List<Integer> unavoids) {
+		List<Integer> splits = new ArrayList<>();
+		
+		for (int p : unavoids) {
+			if (isSplitPoint(graph, p)) {
+				splits.add(p);
+			}
+		}
+		
+		Collections.sort(splits);
+		return splits;
+	}
+	
 	static boolean isUnavoidable(Map<Integer, Set<Integer>> graph, int p) {
 		int N = graph.keySet().size() - 1;
 		if (p == 0 || p == N)
 			return false;
 		
 		Queue<Integer> queue = new ArrayDeque<>();
-		boolean[] visited = new boolean[53];
+		boolean[] visited = new boolean[MAX_POINTS];
 		
 		queue.add(0);
 		visited[0] = true;
@@ -92,6 +112,45 @@ public class race3 {
 		}
 		
 		return true;
+	}
+	
+	static boolean isSplitPoint(Map<Integer, Set<Integer>> graph, int p) {
+		int N = graph.keySet().size() - 1;
+		if (p == 0 || p == N)
+			return false;
+		
+		boolean[] visited1 = new boolean[MAX_POINTS];
+		boolean[] visited2 = new boolean[MAX_POINTS];
+		
+		dfs(graph, visited1, 0, p);
+		dfs(graph, visited2, p, -1);
+		
+		for (int i = 0; i < MAX_POINTS; i++) {
+			if (visited1[i] && visited2[i])
+				return false;
+		}
+		
+		return true;
+	}
+	
+	static void dfs(Map<Integer, Set<Integer>> graph, boolean[] visited, int node, int exclude) {
+		if (visited[node])
+			return;
+		
+		visited[node] = true;
+		for (int next : graph.get(node)) {
+			if (next != exclude) {
+				dfs(graph, visited, next, exclude);
+			}
+		}
+	}
+	
+	static void debugPrint(List<Integer> list) {
+		System.out.print(list.size());
+		for (int i = 0; i < list.size(); i++) {
+			System.out.print(" " + list.get(i));
+		}
+		System.out.println();
 	}
 	
 	private static Input fromFile(String path) throws IOException {
