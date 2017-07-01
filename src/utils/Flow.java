@@ -46,7 +46,7 @@ public class Flow {
 				}
 				
 				for (int next = 0; next < edges.length; next++) {
-					if (prevs[next] != -1 && edges[curr][next] > 0) {
+					if (prevs[next] == -1 && edges[curr][next] > 0) {
 						prevs[next] = curr;
 						queue.add(next);
 					}
