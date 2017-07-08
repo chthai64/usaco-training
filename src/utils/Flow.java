@@ -56,7 +56,7 @@ public class Flow {
 			// compute the path capacity
 			int pathCap = Integer.MAX_VALUE;
 			int node = sink;
-			while (node != -1) {
+			while (node > 0) {
 				int prev = prevs[node];
 				pathCap = Math.min(pathCap, edges[prev][node]);
 				node = prev;
@@ -67,7 +67,7 @@ public class Flow {
 			
 			// update the residual graph
 			node = sink;
-			while (node != -1) {
+			while (node > 0) {
 				int prev = prevs[node];
 				edges[prev][node] -= pathCap;
 				edges[node][prev] += pathCap;
